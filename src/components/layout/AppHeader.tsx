@@ -1,13 +1,16 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Bell } from "lucide-react";
+import { RefreshCw, Bell, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useFirebaseSync } from "@/hooks/useFirebaseSync";
 
 interface AppHeaderProps {
   title: string;
 }
 
 export function AppHeader({ title }: AppHeaderProps) {
+  const { syncing, syncAllDevices } = useFirebaseSync();
+
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
       <div className="flex items-center gap-4">
@@ -22,9 +25,15 @@ export function AppHeader({ title }: AppHeaderProps) {
           variant="outline" 
           size="sm" 
           className="gap-2 bg-gradient-primary text-white border-0 hover:opacity-90"
+          onClick={syncAllDevices}
+          disabled={syncing}
         >
-          <RefreshCw className="h-4 w-4" />
-          Request Device Data Sync
+          {syncing ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          {syncing ? 'Syncing...' : 'Request Device Data Sync'}
         </Button>
         
         <div className="relative">

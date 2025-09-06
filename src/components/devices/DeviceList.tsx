@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { mockDevices, Device } from '@/data/mockData';
+import { useDevices } from '@/hooks/useDevices';
+import { Device } from '@/data/mockData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Table, 
   TableBody, 
@@ -12,7 +14,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Eye, Search, Filter } from 'lucide-react';
+import { Eye, Search, Filter, Loader2, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface DeviceListProps {
@@ -29,10 +31,11 @@ const getStatusVariant = (status: string) => {
 };
 
 export function DeviceList({ onDeviceSelect }: DeviceListProps) {
+  const { devices, loading, error } = useDevices();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  const filteredDevices = mockDevices.filter(device => {
+  const filteredDevices = devices.filter(device => {
     const matchesSearch = device.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          device.deviceModel.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          device.employeeEmail.toLowerCase().includes(searchQuery.toLowerCase());
@@ -40,10 +43,48 @@ export function DeviceList({ onDeviceSelect }: DeviceListProps) {
     return matchesSearch && matchesFilter;
   });
 
+  if (loading) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading Device Management...
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-foreground">Device Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive" />
+            <p>Error loading device data: {error}</p>
+            <p className="text-sm mt-2">Please check your Firebase connection</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-card border-border">
       <CardHeader>
         <CardTitle className="text-foreground">Device Management</CardTitle>
+        <p className="text-sm text-muted-foreground">Real-time data from Firebase ({devices.length} devices)</p>
         <div className="flex gap-4 mt-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -125,6 +166,13 @@ export function DeviceList({ onDeviceSelect }: DeviceListProps) {
             ))}
           </TableBody>
         </Table>
+
+        {filteredDevices.length === 0 && !loading && (
+          <div className="text-center py-8 text-muted-foreground">
+            <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No devices found matching your criteria</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

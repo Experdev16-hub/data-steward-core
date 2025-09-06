@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AppLayout } from "@/components/layout/AppLayout";
 import { DeviceList } from "@/components/devices/DeviceList";
 import { DeviceDrawer } from "@/components/devices/DeviceDrawer";
 import { Device } from "@/data/mockData";
@@ -19,14 +18,14 @@ const DeviceManagement = () => {
   };
 
   return (
-    <AppLayout title="Device Management">
+    <div>
       <DeviceList onDeviceSelect={handleDeviceSelect} />
       <DeviceDrawer 
         device={selectedDevice}
         isOpen={isDrawerOpen}
         onClose={handleDrawerClose}
       />
-    </AppLayout>
+    </div>
   );
 };
 
